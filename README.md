@@ -1,2 +1,8 @@
-# maga-shell
-In this repository, I am implementing a shell to better understand operating systems. Wish you enjoy this project as much as me! &lt;3
+// shell loop 
+// input parsing
+// command execution exp to handle built in commands: cd, pwd, echo, env, setenv, which, exit
+// execute external commands
+// manage environemnt variables
+// manage path 
+// error handling 
+
