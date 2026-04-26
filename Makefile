@@ -1,14 +1,14 @@
-TARGET = my_shell
-OBJ = main.c input_parser.c
-CC = gcc
+executable = mega-shell
+source_files = main.c input_parser.c
+compiler = gcc
 
 all:
-	$(CC) -o $(TARGET) $(OBJ)
+	$(compiler) -o $(executable) $(source_files)
 
 clean:
 	rm -f *.o
 
 fclean:
-	rm -f $(TARGET)
+	rm -f $(executable)
 
 re: fclean all

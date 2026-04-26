@@ -25,7 +25,7 @@ char** parse_input(char* input){
             perror("Malloc");
             exit(EXIT_FAILURE);
         }
-        for (size_t j = 0; j <token_length; j++){
+        for (size_t j = 0; j < token_length; j++){
             tokens[position][j] = token[j];
         }
         tokens[position][token_length] = '\0'; // Null terminate token
@@ -37,4 +37,17 @@ char** parse_input(char* input){
 
     return tokens;
 
+}
+
+// Free allocoated tokesns
+void free_tokens (char** tokens){
+    if (!tokens){
+        return;
+    }
+
+    for (size_t i=0; tokens[i]; i++){
+        free(tokens[i]); // free each token 
+    }
+
+    free(tokens); // free the tokens array
 }
