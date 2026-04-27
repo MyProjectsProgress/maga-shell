@@ -5,27 +5,34 @@
 // echo, cd, pwd, echo, env, setenv, which, exit
 int shell_build(char** args, char** env, char* initial_directory){
 
-    if (strcmp(args[0], "cd")){
-        return command_cd(args[0], initial_directory);
+    if (my_strcmp(args[0], "cd") == 0){
+        // return command_cd(args, initial_directory);
+        return 0;
     
-    } else if (strcmp(args[0], "pwd")) {
-        return command_pwd(); 
+    } else if (my_strcmp(args[0], "pwd") == 0) {
+        // return command_pwd(); 
+        return 0;
 
-    } else if (strcmp(args[0], "echo")) {
-        return command_echo(args[0], env);
+    } else if (my_strcmp(args[0], "echo") == 0) {
+        // return command_echo(args, env);
+        return 0;
         
-    } else if (strcmp(args[0], "env")) {
-        return command_env(env);
+    } else if (my_strcmp(args[0], "env") == 0) {
+        // return command_env(env);
+        return 0;
         
-    } else if (strcmp(args[0], "which")) {
-        return command_which(args[0], env);
+    } else if (my_strcmp(args[0], "which") == 0) {
+        // return command_which(args, env);
+        return 0;
         
-    } else if (strcmp(args[0], "exit") || strcmp(args[0], "quit")) {
+    } else if (my_strcmp(args[0], "exit") == 0 || my_strcmp(args[0], "quit") == 0) {
         exit(EXIT_SUCCESS);
         
     } else {
         // Not a built-in command
+        // printf("Command not found: %s\n", args[0]);
     }
+    return 0;
 }   
 
 void shell_loop(char** env){
@@ -55,7 +62,7 @@ void shell_loop(char** env){
         //     printf("\n");
         // }
         
-        if (!args[0]){
+        if (args[0]){
             shell_build(args, env, initial_directory); 
         }
 

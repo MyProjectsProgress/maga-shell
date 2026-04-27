@@ -1,6 +1,7 @@
 #include "stdio.h"
 #include "stdlib.h"
 #include "unistd.h"
+#include "stddef.h"
 
 #define MAX_INPUT 128;
 
@@ -19,3 +20,5 @@ int command_which(char** args, char** env);
 
 char** command_setenv(char** args, char** env);
 char** command_unsetenv(char** args, char** env);
+
+int my_strcmp(const char* str1, const char* str2);

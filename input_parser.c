@@ -15,12 +15,22 @@ char** parse_input(char* input){
 
     // we loop o each pointer, then we retrive the string, loop on it char by char, then increase the size of storage for that string based on its characters.
     for (size_t i = 0; input[i]; i++){
+
+        while(input[i] == ' ' || input[i] == '\n' || input[i] == '\t' || input[i] == '\r' || input [i] == '\t'){
+            i++;
+        }
+
+        if (input[i] == '\0') break;
+
         token = &input[i];
-        while (input[i] && input[i] != ' '){
+
+        while (input[i] && input[i] != ' ' && input[i] != '\n' && input[i] != '\t' && input[i] != '\r' && input [i] != '\t'){
             token_length++;
             i++;
         }
+
         tokens[position] = malloc((token_length+1) * sizeof(char)); //+1 is for the null terminator '\0'
+
         if(!tokens[position]){
             perror("Malloc");
             exit(EXIT_FAILURE);
