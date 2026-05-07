@@ -74,9 +74,7 @@ void shell_loop(char** env){
         
         // For debugging the input up arrow. 
         // char c;
-
         // read(STDIN_FILENO, &c, 1);
-
         // printf("ASCII: %d\n", c);    
     }
 

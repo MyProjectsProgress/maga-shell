@@ -31,3 +31,4 @@ void disable_raw_mode();
 void enable_raw_mode();
 char* read_input();
 void add_to_history(char* command);
+void clear_line(int* position);
