@@ -1,5 +1,5 @@
 executable = mega-shell
-source_files = main.c input_parser.c utils.c
+source_files = main.c input_parser.c utils.c builtins.c terminal.c
 compiler = gcc
 
 all:

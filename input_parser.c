@@ -1,12 +1,12 @@
 #include "my_shell.h"
 
-char** parse_input(char* input){
+char** parse_input(char* input)
+{
     size_t buffer_size = MAX_INPUT;
     char** tokens = malloc(buffer_size * sizeof(char*)); // we first allocate the whole buffer as array of pointers, no actual strings are stored.
     char* token = NULL;
     size_t token_length = 0;
     size_t position = 0;
-
 
     if(!tokens){
         perror("Malloc");
@@ -14,11 +14,9 @@ char** parse_input(char* input){
     }
 
     // we loop o each pointer, then we retrive the string, loop on it char by char, then increase the size of storage for that string based on its characters.
-    for (size_t i = 0; input[i]; i++){
-
-        while(input[i] == ' ' || input[i] == '\n' || input[i] == '\t' || input[i] == '\r' || input [i] == '\t'){
-            i++;
-        }
+    for (size_t i = 0; input[i]; i++)
+    {
+        while(input[i] == ' ' || input[i] == '\n' || input[i] == '\t' || input[i] == '\r' || input [i] == '\t') { i++; }
 
         if (input[i] == '\0') break;
 
