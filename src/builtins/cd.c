@@ -32,10 +32,3 @@ int command_cd(char** args, char* initial_directory)
     return 0; 
 }
 
-
-int command_env(char** env);
-int command_which(char** args, char** env);
-
-char** command_setenv(char** args, char** env);
-char** command_unsetenv(char** args, char** env);
-

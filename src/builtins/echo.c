@@ -6,13 +6,15 @@ int command_echo(char** args, char** env)
     int new_line_flag = 1; // Default echo ends with newline
     int  i = 1; // Skipping the -n
 
-    if (args[1] != NULL && my_strcmp(args[1], "-n") == 0){
+    if (args[1] != NULL && my_strcmp(args[1], "-n") == 0)
+    {
         new_line_flag = 0;
         i++;
     }
 
     // Processing remaining args
-    for (; args[i];i++){
+    for (; args[i];i++)
+    {
         if (args[i][0] == '$'){ // Handle environment variables
             (void)env;
         } else {
@@ -24,11 +26,8 @@ int command_echo(char** args, char** env)
         }
     }
 
-    if (new_line_flag){
-        printf("\n");
-    }
+    if (new_line_flag) { printf("\n"); }
 
     return 0;
-
 
 }
