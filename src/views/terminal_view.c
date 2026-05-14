@@ -1,4 +1,4 @@
-#include "my_shell.h"
+#include "../../include/my_shell.h"
 
 
 // To handle the history of terminal commands, Global variables used in more than one function

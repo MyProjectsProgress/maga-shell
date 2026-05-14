@@ -1,4 +1,4 @@
-#include "my_shell.h"
+#include "../../include/my_shell.h"
 
 char** parse_input(char* input)
 {

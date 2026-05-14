@@ -1,4 +1,4 @@
-#include "my_shell.h"
+#include "../../include/my_shell.h"
 
 // cd, cd [path] "DONE", cd - (previous dir) - cd ~ (home dir), handle non existing dirs, permission issues
 int command_cd(char** args, char* initial_directory)
@@ -85,4 +85,3 @@ int command_which(char** args, char** env);
 
 char** command_setenv(char** args, char** env);
 char** command_unsetenv(char** args, char** env);
-

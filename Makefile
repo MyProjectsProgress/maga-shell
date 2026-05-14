@@ -1,5 +1,11 @@
-executable = mega-shell
-source_files = main.c input_parser.c utils.c builtins.c terminal.c
+executable = mega
+
+source_files =  src/main.c \
+				src/views/terminal_view.c \
+				src/services/parser_service.c \
+				src/builtins/builtins.c \
+				src/utils/string_utils.c 
+
 compiler = gcc
 
 all:

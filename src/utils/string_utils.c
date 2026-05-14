@@ -1,4 +1,4 @@
-#include "my_shell.h"
+#include "../../include/my_shell.h"
 
 // 0: The strings are equal.
 // < 0 str 1 < str2

@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "my_shell.h"
+#include "../include/my_shell.h"
 
 // built-ins: echo, cd, pwd, echo, env, setenv, which, exit
 // binary commands: ls, cat, .. .

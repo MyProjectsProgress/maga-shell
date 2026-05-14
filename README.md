@@ -1,542 +1,906 @@
-# Mega Shell — System Design
-
-## Overview
-
-Mega Shell is a custom Unix-like shell implemented in C for educational purposes.
-
-The project is designed to help understand:
-
-* C programming fundamentals
-* Linux/macOS system calls
-* Terminal behavior
-* Process management
-* Shell internals
-
-The shell currently supports:
-
-* Interactive command loop
-* Built-in commands (`cd`, `pwd`, `echo`, `exit`)
-* Raw terminal mode
-* Command history
-* Arrow key navigation
-* Input parsing
+# Mega Shell — Detailed Architecture Specification
 
 ---
 
-# High-Level Architecture
+# Project Goal
 
-The shell follows a layered pipeline:
+Mega Shell is a Unix-like shell written in C for learning:
 
-```text
-Keyboard Input
-    ↓
-Terminal Layer
-    ↓
-Parser Layer
-    ↓
-Command Dispatcher
-    ↓
-Built-in / External Command Execution
+* C programming
+* Operating systems
+* terminal internals
+* process management
+* system calls
+* provenance tracking
+* command history persistence
+
+---
+
+# Directory Structure
+
+```text id="glb1rz"
+mega-shell/
+│
+├── src/
+│   ├── controllers/
+│   ├── models/
+│   ├── views/
+│   ├── services/
+│   ├── builtins/
+│   ├── utils/
+│   └── main.c
+│
+├── include/
+│   └── my_shell.h
+│
+├── data/
+│   ├── history.db
+│   └── provenance.db
+│
+├── Makefile
+└── README.md
 ```
 
 ---
 
-# System Components
+# 1. MAIN ENTRYPOINT
 
-## 1. Terminal Layer (`terminal.c`)
+---
 
-Responsible for all terminal interaction and user input behavior.
+## `src/main.c`
+
+Application startup.
+
+Responsible only for bootstrapping the shell.
+
+---
+
+## Functions
+
+---
+
+### `int main(int argc, char** argv, char** env)`
 
 ### Responsibilities
 
-* Enable raw terminal mode
-* Disable canonical input mode
-* Disable terminal echo
-* Read user input character-by-character
-* Handle backspace
-* Handle arrow keys
-* Maintain command history
-* Render command line manually
+* initialize shell state
+* initialize databases
+* enable raw mode
+* start shell loop
+* cleanup on exit
 
-### Core Functions
+### Flow
 
-### `enable_raw_mode()`
-
-Configures terminal settings:
-
-* disables `ICANON`
-* disables `ECHO`
-
-This allows immediate key processing.
+```text id="6z0w3u"
+initialize_shell()
+start_shell_loop()
+cleanup_shell()
+```
 
 ---
 
-### `disable_raw_mode()`
+---
 
-Restores original terminal state before shell exits.
+# 2. CONTROLLERS
 
-Important for preventing terminal corruption after program termination.
+Controllers orchestrate program flow.
 
 ---
 
-### `read_input()`
+## `src/controllers/shell_controller.c`
 
-Reads input one byte at a time.
+Main shell controller.
 
-Handles:
+Owns interactive loop.
 
-* Enter
-* Backspace
-* Up arrow history
-* Down arrow history
-* Left/right arrow ignoring
+---
+
+## Functions
+
+---
+
+### `void shell_loop(char** env, ShellState* shell_state)`
+
+### Responsibilities
+
+* render prompt
+* read input
+* save history
+* parse input
+* dispatch command
+* log provenance
+* free memory
+
+---
+
+Flow:
+
+```text id="2r8j5p"
+render prompt
+read input
+parse
+execute
+log
+repeat
+```
+
+---
+
+---
+
+### `void initialize_shell(ShellState* shell_state)`
+
+### Responsibilities
+
+* initialize shell state values
+* load history
+* initialize databases
+
+---
+
+---
+
+### `void cleanup_shell(ShellState* shell_state)`
+
+### Responsibilities
+
+* disable raw mode
+* free history memory
+* close databases
+
+---
+
+---
+
+## `src/controllers/command_controller.c`
+
+Dispatches commands.
+
+---
+
+## Functions
+
+---
+
+### `int dispatch_command(char** args, char** env, ShellState* shell_state)`
+
+### Responsibilities
+
+* identify command type
+* call builtin handler
+* call external executor
+
+---
+
+Flow:
+
+```text id="r3g7yf"
+if builtin:
+   run builtin
+else:
+   run external command
+```
+
+---
+
+---
+
+### `int is_builtin(char* command_name)`
+
+### Responsibilities
+
+Determine whether command is shell-native.
 
 Returns:
 
-```c
-char* input
-```
-
-representing the full command line.
-
----
-
-### `add_to_history()`
-
-Stores previously executed commands.
-
-History is stored globally:
-
-```c
-history[HISTORY_SIZE]
-history_count
+```c id="0l5vh0"
+1 = builtin
+0 = external
 ```
 
 ---
 
-### `clear_line()`
+---
 
-Erases the currently displayed command line.
+### `int execute_builtin(char** args, char** env, ShellState* shell_state)`
 
-Used during history navigation.
+Routes built-in commands.
 
 ---
 
 ---
 
-## 2. Parsing Layer (`input_parser.c`)
+# 3. MODELS
 
-Responsible for converting raw command strings into structured tokens.
+Models manage persistent and runtime data.
 
-### Input
+---
 
-```text
+## `src/models/shell_state.c`
+
+Stores runtime shell state.
+
+---
+
+## Data Structure
+
+---
+
+### `typedef struct ShellState`
+
+Fields:
+
+```c id="sw5k7n"
+typedef struct {
+    char* current_directory;
+    char* previous_directory;
+    int last_exit_status;
+    int history_count;
+} ShellState;
+```
+
+---
+
+## Functions
+
+---
+
+### `ShellState* create_shell_state()`
+
+Allocates and initializes shell state.
+
+---
+
+---
+
+### `void destroy_shell_state(ShellState* shell_state)`
+
+Frees shell state memory.
+
+---
+
+---
+
+## `src/models/history_model.c`
+
+Handles command history.
+
+Persistent storage layer.
+
+Uses SQLite.
+
+---
+
+## Functions
+
+---
+
+### `void initialize_history_db()`
+
+Creates history database if absent.
+
+Creates table:
+
+```sql id="p9l53e"
+history(
+    id INTEGER PRIMARY KEY,
+    command TEXT,
+    timestamp DATETIME
+)
+```
+
+---
+
+---
+
+### `void save_command_to_history(char* command)`
+
+Insert executed command into DB.
+
+---
+
+---
+
+### `char* load_history_command(int index)`
+
+Retrieve command by history index.
+
+Used by arrow navigation.
+
+---
+
+---
+
+### `void free_history()`
+
+Free in-memory history cache.
+
+---
+
+---
+
+## `src/models/provenance_model.c`
+
+Tracks system provenance.
+
+Stores process relationships and file interactions.
+
+Uses SQLite.
+
+---
+
+## Database Tables
+
+---
+
+### `commands`
+
+```sql id="yo1j6w"
+commands(
+    id INTEGER PRIMARY KEY,
+    command TEXT,
+    timestamp DATETIME
+)
+```
+
+---
+
+### `processes`
+
+```sql id="2b7db6"
+processes(
+    pid INTEGER,
+    parent_pid INTEGER,
+    command_id INTEGER
+)
+```
+
+---
+
+### `files`
+
+```sql id="mjlwm2"
+files(
+    id INTEGER PRIMARY KEY,
+    path TEXT
+)
+```
+
+---
+
+### `interactions`
+
+```sql id="jvvh6s"
+interactions(
+    process_id INTEGER,
+    file_id INTEGER,
+    interaction_type TEXT
+)
+```
+
+---
+
+## Functions
+
+---
+
+### `void initialize_provenance_db()`
+
+Creates provenance database.
+
+---
+
+---
+
+### `void log_command_execution(char* command)`
+
+Logs user command.
+
+---
+
+---
+
+### `void log_process_spawn(pid_t pid, pid_t parent_pid, char* command)`
+
+Logs spawned process.
+
+---
+
+---
+
+### `void log_file_interaction(pid_t pid, char* filepath, char* interaction_type)`
+
+Logs file read/write interaction.
+
+---
+
+---
+
+# 4. VIEWS
+
+View layer handles terminal interface.
+
+---
+
+## `src/views/terminal_view.c`
+
+Terminal behavior.
+
+Current raw mode implementation belongs here.
+
+---
+
+## Functions
+
+---
+
+### `void enable_raw_mode()`
+
+Disables:
+
+* canonical mode
+* echo
+
+---
+
+---
+
+### `void disable_raw_mode()`
+
+Restores terminal settings.
+
+---
+
+---
+
+### `char* read_input()`
+
+Reads input character-by-character.
+
+Supports:
+
+* Enter
+* Backspace
+* Up arrow
+* Down arrow
+* Left arrow
+* Right arrow
+
+Returns input string.
+
+---
+
+---
+
+### `void clear_line(int* position)`
+
+Erase current input visually.
+
+---
+
+---
+
+## `src/views/prompt_view.c`
+
+Prompt rendering.
+
+---
+
+## Functions
+
+---
+
+### `void render_prompt()`
+
+Display:
+
+```text id="gj1hdo"
+[current_directory]>
+```
+
+---
+
+Future:
+
+* colors
+* git branch
+* status code
+
+---
+
+---
+
+# 5. SERVICES
+
+Business logic layer.
+
+---
+
+## `src/services/parser_service.c`
+
+Parser logic.
+
+---
+
+## Functions
+
+---
+
+### `char** parse_input(char* input)`
+
+Tokenize command.
+
+Input:
+
+```text id="37q3gd"
 echo hello world
 ```
 
-### Output
+Output:
 
-```c
+```c id="e7fmsf"
 ["echo", "hello", "world", NULL]
 ```
 
 ---
 
-### Core Function
-
-### `parse_input()`
-
-Splits input by:
-
-* spaces
-* tabs
-* newlines
-* carriage returns
-
-Allocates memory dynamically for tokens.
-
 ---
 
-### `free_tokens()`
+### `void free_tokens(char** tokens)`
 
-Frees token arrays after command execution.
-
-Prevents memory leaks.
+Free parser output.
 
 ---
 
 ---
 
-## 3. Command Dispatch Layer (`main.c`)
-
-Responsible for routing commands to the appropriate implementation.
-
-### Workflow
-
-Main shell loop:
-
-1. Display prompt
-2. Read input
-3. Save command to history
-4. Parse input
-5. Dispatch command
-6. Free memory
+Future:
 
 ---
 
-### `shell_loop()`
+### `Command* parse_command_structure(char* input)`
 
-Main infinite loop:
+Rich parser for:
 
-```c
-while (1)
-```
-
-This is the event loop of the shell.
-
----
-
-### `shell_build()`
-
-Dispatches commands based on first token:
-
-```c
-args[0]
-```
-
-Examples:
-
-* `cd`
-* `pwd`
-* `echo`
-* `exit`
-
----
-
-Example dispatch:
-
-```c
-if (my_strcmp(args[0], "pwd") == 0)
-```
-
-Routes to:
-
-```c
-command_pwd()
-```
+* pipes
+* redirection
+* background jobs
 
 ---
 
 ---
 
-## 4. Built-in Command Layer (`builtins.c`)
+## `src/services/executor_service.c`
 
-Implements shell-native commands.
-
-These commands execute inside the shell process itself.
-
-Why?
-
-Because commands like `cd` must modify shell state.
-
-Example:
-
-A child process changing directory would not affect parent shell.
+External command execution.
 
 ---
 
-### Implemented Built-ins
+## Functions
 
 ---
 
-### `command_cd()`
-
-Changes current working directory using:
-
-```c
-chdir()
-```
-
-Supports:
-
-* `cd`
-* `cd <path>`
+### `int execute_external_command(char** args, char** env)`
 
 Uses:
 
-```c
-getenv("HOME")
-```
-
-for default home directory.
+* fork
+* execvp
+* waitpid
 
 ---
 
-### `command_pwd()`
+Flow:
 
-Prints current directory using:
-
-```c
-getcwd()
+```text id="g35w78"
+fork
+child executes
+parent waits
 ```
 
 ---
 
-### `command_echo()`
+---
 
-Prints user arguments.
+### `char* resolve_command_path(char* command, char** env)`
+
+Search executable inside PATH.
+
+---
+
+Used for:
+
+```bash id="m0jx13"
+which ls
+```
+
+---
+
+---
+
+## `src/services/terminal_service.c`
+
+Terminal helper functions.
+
+---
+
+## Functions
+
+---
+
+### `int is_arrow_key(char c)`
+
+Detect escape sequences.
+
+---
+
+---
+
+### `void move_cursor_left()`
+
+Future cursor editing.
+
+---
+
+---
+
+### `void move_cursor_right()`
+
+Future cursor editing.
+
+---
+
+---
+
+# 6. BUILTINS
+
+Each builtin isolated in separate file.
+
+---
+
+## `src/builtins/cd.c`
+
+---
+
+### `int command_cd(char** args, ShellState* shell_state)`
 
 Supports:
 
-* `echo hello`
-* `echo -n hello`
+* cd
+* cd path
+* cd -
+* cd ~
 
-Planned:
-
-* environment variable expansion
-
----
-
-### `exit`
-
-Restores terminal state and terminates shell.
+Updates shell state.
 
 ---
 
 ---
 
-## 5. Utility Layer (`utils.c`)
-
-Contains helper functions.
+## `src/builtins/pwd.c`
 
 ---
 
-### `my_strcmp()`
+### `int command_pwd()`
 
-Custom implementation of:
-
-```c
-strcmp()
-```
-
-Used for command comparisons.
+Print current directory.
 
 ---
 
-# Data Flow
+---
 
-## Command Execution Lifecycle
-
-Example:
-
-```bash
-echo hello
-```
-
-Execution path:
-
-```text
-User types command
-    ↓
-read_input()
-    ↓
-add_to_history()
-    ↓
-parse_input()
-    ↓
-shell_build()
-    ↓
-command_echo()
-```
+## `src/builtins/echo.c`
 
 ---
 
-# Memory Management Strategy
+### `int command_echo(char** args, char** env)`
 
-The shell dynamically allocates memory for:
+Supports:
 
-* input buffers
-* parsed tokens
-* history entries
-
-Freed resources:
-
-* parsed tokens after execution
-* input buffers after parsing
-
-Persistent allocations:
-
-* command history
+* echo
+* echo -n
+* environment variables
 
 ---
 
-# Terminal Behavior
+---
 
-The shell uses raw mode:
-
-```c
-ICANON disabled
-ECHO disabled
-```
-
-This allows:
-
-* immediate key handling
-* manual echoing
-* arrow key detection
-
-Arrow sequences handled:
-
-| Key   | Sequence |
-| ----- | -------- |
-| Up    | ESC [ A  |
-| Down  | ESC [ B  |
-| Right | ESC [ C  |
-| Left  | ESC [ D  |
+## `src/builtins/env.c`
 
 ---
 
-# Current Limitations
+### `int command_env(char** env)`
 
-Not yet implemented:
-
-* External commands (`ls`, `cat`, etc.)
-* PATH resolution
-* Pipes (`|`)
-* Redirection (`>`, `<`)
-* Background jobs (`&`)
-* Signal handling
-* Tab completion
+Print environment variables.
 
 ---
 
-# Planned Features
+---
 
-## External Commands
-
-Will use:
-
-* `fork()`
-* `execvp()`
-* `waitpid()`
+## `src/builtins/which.c`
 
 ---
 
-## Pipes
+### `int command_which(char** args, char** env)`
 
-Will use:
-
-* `pipe()`
-* `dup2()`
+Locate executable.
 
 ---
 
-## Redirection
+---
 
-Will use:
-
-* `open()`
-* `dup2()`
+## `src/builtins/exit.c`
 
 ---
 
-## Signals
+### `int command_exit()`
 
-Will handle:
-
-* `SIGINT`
-* `Ctrl+C`
+Cleanup and terminate shell.
 
 ---
 
-# Design Principles
+---
 
-The project follows these system design principles:
+# 7. UTILS
+
+Helper utilities.
 
 ---
 
-## Separation of Concerns
-
-Modules are separated by responsibility:
-
-* terminal handling
-* parsing
-* dispatching
-* command execution
+## `src/utils/string_utils.c`
 
 ---
 
-## Modularity
+### `int my_strcmp(const char* str1, const char* str2)`
 
-Files are organized as:
-
-* `main.c`
-* `terminal.c`
-* `input_parser.c`
-* `builtins.c`
-* `utils.c`
+String comparison.
 
 ---
 
-## Explicit Resource Management
+---
 
-Manual management of:
+### `char* my_strdup(const char* str)`
 
-* memory
-* terminal state
-* buffers
+Duplicate string.
 
 ---
 
-## Layered Architecture
+---
 
-Pipeline:
+### `int my_strlen(const char* str)`
 
-```text
-Input → Parse → Dispatch → Execute
-```
-
-This design is intentionally similar to real shell systems.
+String length.
 
 ---
 
-# Future Refactoring
+---
 
-Planned improvements:
+### `char* my_strcpy(char* dest, const char* src)`
 
-* command table instead of long if/else chain
-* shell state struct instead of global variables
-* richer command structures for pipes/redirection
+Copy string.
 
-Example future command representation:
+---
 
-```c
-struct command {
+---
+
+# Future Data Structures
+
+---
+
+## `Command`
+
+Future richer command representation.
+
+```c id="j1n1gc"
+typedef struct {
     char** args;
     char* input_file;
     char* output_file;
     int background;
-};
+} Command;
+```
+
+Supports:
+
+* pipes
+* redirection
+* background jobs
+
+---
+
+---
+
+# Implementation Order
+
+Recommended order.
+
+---
+
+## Phase 1 (current)
+
+* shell loop
+* parser
+* builtins
+* raw mode
+* history
+
+---
+
+## Phase 2
+
+* external commands
+* fork
+* execvp
+* waitpid
+
+---
+
+## Phase 3
+
+* PATH resolution
+* which
+
+---
+
+## Phase 4
+
+* SQLite history database
+
+---
+
+## Phase 5
+
+* provenance database
+
+---
+
+## Phase 6
+
+* pipes
+
+---
+
+## Phase 7
+
+* redirection
+
+---
+
+## Phase 8
+
+* signals
+
+---
+
+# Core Execution Flow
+
+```text id="p7i7rq"
+Prompt View
+   ↓
+Terminal View
+   ↓
+Shell Controller
+   ↓
+Parser Service
+   ↓
+Command Controller
+   ↓
+Builtin or External Executor
+   ↓
+History Model
+   ↓
+Provenance Model
 ```
 
 ---
 
-# Learning Outcomes
+# System Design Principles
 
-This project teaches:
+This project follows:
 
-* pointers
-* dynamic memory
-* terminal APIs
-* system calls
-* process creation
-* file descriptors
-* shell architecture
-* Unix programming concepts
-
-# Notes for me:
-### System Design Prenciples:
-- Single Responsibility Principle (SRP): For example, a function should do one job.
-- Open/Closed Principle (OCP): You can add new functionality without changing the existing code. You can achieve this by creating a common interface.
-- Dependency Inversion Principle (DIP): 
-- Law of Demeter (LoD): A module should not know the inner details of the objects it manipulates.
+* Separation of concerns
+* Layered architecture
+* MVC-inspired design
+* Explicit memory management
+* Persistent storage abstraction
+* Modular command execution
