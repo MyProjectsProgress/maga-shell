@@ -36,8 +36,7 @@ void disable_raw_mode();
 void enable_raw_mode();
 char* read_input();
 void add_to_history(char* command);
-void clear_line(int* position);
-
+void refresh_line(char* buffer, int string_length, int cursor);
 
 // 5- Utils
 // string_utils.c

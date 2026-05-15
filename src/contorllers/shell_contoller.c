@@ -49,6 +49,8 @@ void shell_loop(char** env)
 
         input = read_input();
 
+        if (!input) continue; // handling failure in reading
+
         if (input[0] != '\0') {
             add_to_history(input);
         }
