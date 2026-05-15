@@ -2,7 +2,7 @@
 
 int command_exit()
 {
-        printf(
+    printf(
     "             /\n"
     "            /  \\\n"
     "           /++++\\\\\n"
@@ -13,9 +13,8 @@ int command_exit()
     "          .-''''-.\n"
     "        .'  o  o  '.\n"
     "       /     ^      \\\n"
-    "      |   \\_____/   |\n"
-    "      |             |\n"
-    "       \\  \\___/   /\n"
+    "      |   \\_____/   |\n"  
+    "       \\           /\n"
     "        '._____.-'\n"
     "         /|   |\\\\\n"
     "        /_|___|_\\\\\n"
@@ -24,6 +23,8 @@ int command_exit()
     "\n"
     "   Thanks for using Mega Shell ❄️\n"
     );
+
     disable_raw_mode();
+
     exit(EXIT_SUCCESS);
 }

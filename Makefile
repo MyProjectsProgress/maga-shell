@@ -10,9 +10,9 @@ source_files =  src/main.c \
 				src/builtins/which.c \
 				src/views/terminal_view.c \
 				src/services/parser_service.c \
+				src/services/executor_service.c \
 				src/utils/string_utils.c \
-				
-				
+				src/utils/path_utils.c \
 
 compiler = gcc
 

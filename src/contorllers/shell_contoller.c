@@ -1,7 +1,9 @@
 #include "../../include/my_shell.h"
 
-int shell_build(char** args, char** env, char* initial_directory){
-
+// Command lines Router
+int shell_router(char** args, char** env, char* initial_directory)
+{
+    // Built-in commands
     if (my_strcmp(args[0], "cd") == 0) { return command_cd(args, initial_directory);}
 
     else if (my_strcmp(args[0], "pwd") == 0) { return command_pwd(); } 
@@ -14,18 +16,18 @@ int shell_build(char** args, char** env, char* initial_directory){
     
     else if (my_strcmp(args[0], "exit") == 0 || my_strcmp(args[0], "quit") == 0) { return command_exit(); } 
     
-    else {
-        // Not a built-in command
-        // printf("Command not found: %s\n", args[0]);
-        // executer();
+    // Not a built-in commands
+    else 
+    {
+        return execute_external_command(args, env);
     }
 
     return 0;
 }   
 
-
 // the main shell loop
-void shell_loop(char** env){
+void shell_loop(char** env)
+{
 
     char* input = NULL;
     char** args;
@@ -54,7 +56,7 @@ void shell_loop(char** env){
         args = parse_input(input);
 
         if (args[0]){
-            shell_build(args, env, initial_directory); 
+            shell_router(args, env, initial_directory); 
         }
 
         free_tokens(args);
